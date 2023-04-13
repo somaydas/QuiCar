@@ -1,0 +1,143 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Car Price Predictor</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-rbsA2VBKQhggwzxH7pPCaAqO46MgnOM80zW1RWuH61DGLwZJEdK2Kadq2F9CUG65" crossorigin="anonymous">
+    <link rel="stylesheet" href="static/css/style.css">
+  </head>
+  <body class="bg-dark">
+    <div class="container">
+      <div class="row">
+        <div class="card mt-50" style="width: 100%; hieght: 100%">
+          <div class="card-header" style="text-align: center">
+            <div class="col-12">
+              <h1>Welcome to Car Price Predictor</h1>
+            </div>
+
+          </div>
+          <div class="card-body mb-3">
+            <form method="post" accept-charset="utf-8">
+
+<!--              company-->
+              <div class="col-50 form-group" style="text-align: center">
+                <label><b>Select Company</b><br></label><br>
+                  <select class="selectpicker form-control" id="company" name="company" required="1" onchange="load_car_models(this.id,'car_model')">
+                  {% for company in companies%}
+                  <option value="{{company}}">{{company}}</option>
+                    {%endfor%}
+                </select>
+
+              </div>
+
+<!--              car model-->
+              <div class="col-50 form-group" style="text-align: center">
+                <label><b>Select Model</b><br></label><br>
+                <select class="selectpicker form-control" id="car_model" name="car_model" required="1"></select>
+              </div>
+
+<!--              Year-->
+              <div class="col-50 form-group" style="text-align: center">
+                <label><b>Select Year of Purchase</b><br></label><br>
+                <select class="selectpicker form-control" id="year" name="year" required="1">
+                  {% for year in years%}
+                  <option value="{{year}}">{{year}}</option>
+                    {%endfor%}
+                </select>
+              </div>
+
+<!--              Fuel-type-->
+              <div class="col-50 form-group" style="text-align: center">
+                <label><b>Select Fuel Type</b><br></label><br>
+                <select class="selectpicker form-control" id="fuel_type" name="fuel_type" required="1">
+                  {% for fuel in fuel_type%}
+                  <option value="{{fuel}}">{{fuel}}</option>
+                    {%endfor%}
+                </select>
+              </div>
+<!--              Kilometres-->
+              <div class="col-50 form-group" style="text-align: center">
+                <label><b>Select number of Kilometres</b></label><br>
+                <input class="form-control" type="text" id="kilo_driven" name="kilo_driven" required="1" placeholder="Enter number of km travel">
+              </div>
+
+<!--              Predict-->
+              <div class="col-50 form-group" style="text-align: center">
+                <br>
+                <button class="btn btn-primary form-control" onclick="send_data()">Predict Price</button>
+              </div>
+
+            </form><br>
+              <div class="row">
+                  <div class="col-12" style="text-align: center">
+                      <h3><span id="prediction"></span></h3>
+                  </div>
+              </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <script>
+        function load_car_models(company_id,car_model_id)
+        {
+            var company=document.getElementById(company_id);
+            var car_model=document.getElementById(car_model_id);
+
+            console.log(company.value);
+
+            car_model.value="";
+            car_model.innerHTML="";
+            {% for company in  companies%}
+                if(company.value=="{{company}}")
+                {
+                    {% for model in car_model %}
+                        {% if company in model %}
+                            var newOption = document.createElement("option");
+                            newOption.value="{{model}}";
+                            newOption.innerHTML="{{model}}";
+                            car_model.options.add(newOption);
+
+                        {% endif %}
+                    {% endfor %}
+                }
+            {% endfor %}
+
+        }
+
+        function form_handler(event)
+        {
+            event.preventDefault(); //this function prevents the form from auto submission and redirecting the attributes to unknown page
+        }
+
+        function send_data()
+        {
+            //Supress form default behaviour
+            document.querySelector('form').addEventListener('submit',form_handler); //Redirection on click
+
+
+            //Send and receive data to predict
+
+            var fd =new FormData(document.querySelector('form')); //Formation of form data
+
+            var xhr = new XMLHttpRequest(); //xhr object fulfils the data transfer
+
+            xhr.open('POST','/predict' ,true);
+            document.getElementById("prediction").innerHTML="Wait !!"; //span in the last div(prediction)
+
+            //Receive prediction
+            xhr.onreadystatechange=function()
+            {
+                if(xhr.readyState ==XMLHttpRequest.DONE)
+                {
+                    document.getElementById("prediction").innerHTML="Prediction: Rs."+xhr.responseText;
+                }
+            }
+            xhr.onload=function(){};
+            xhr.send(fd);
+        }
+
+    </script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-kenU1KFdBIe4zVF0s0G1M5b4hcpxyD9F7jL+jjXkk+Q2h455rYXK/7HAuoJl+0I4" crossorigin="anonymous"></script>
+  </body>
+</html>
